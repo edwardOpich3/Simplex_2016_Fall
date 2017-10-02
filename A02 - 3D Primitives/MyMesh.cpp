@@ -276,7 +276,29 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	// Define the points of the cone based on radius, height, and subdivisions (there should be a_nSubdivisons + 2 vertices)
+	vector3* vertices = new vector3[a_nSubdivisions + 2];
+
+	vertices[a_nSubdivisions] = vector3(0.0f, -a_fHeight / 2.0f, 0.0f);	// Bottom center point
+	vertices[a_nSubdivisions + 1] = vector3(0.0f, a_fHeight / 2.0f, 0.0f);	// Tip of the cone
+
+	// For every subdivision, place a point, starting at (radius, 0, 0)
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		vertices[i] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius, -a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius);
+	}
+
+	// Define the triangles in the cone based on the number of points
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		AddTri(vertices[(i + 1) % a_nSubdivisions], vertices[i], vertices[a_nSubdivisions + 1]);
+		AddTri(vertices[i], vertices[(i + 1) % a_nSubdivisions], vertices[a_nSubdivisions]);
+	}
+
+	// Delete your vertices now that you've defined your triangles
+	delete[] vertices;
+
 	// -------------------------------
 
 	// Adding information about color
@@ -300,7 +322,31 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	// Define the points of the cylinder based on radius, height, and subdivisions (there should be (a_nSubdivisons * 2) + 2 vertices)
+	vector3* vertices = new vector3[(a_nSubdivisions * 2) + 2];
+
+	vertices[(a_nSubdivisions * 2)] = vector3(0.0f, -a_fHeight / 2.0f, 0.0f);	// Bottom center point
+	vertices[(a_nSubdivisions * 2) + 1] = vector3(0.0f, a_fHeight / 2.0f, 0.0f);	// Top center point
+
+	// For every subdivision, place 2 points, starting at (radius, Y, 0), one at the bottom, one at the top
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		vertices[i] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius, -a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius);
+		vertices[i + a_nSubdivisions] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius, a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fRadius);
+	}
+
+	// Define the quads and triangles in the cylinder based on the number of points
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		AddQuad(vertices[(i + 1) % a_nSubdivisions], vertices[i], vertices[((i + 1) % a_nSubdivisions) + a_nSubdivisions], vertices[i + a_nSubdivisions]);
+		AddTri(vertices[i], vertices[(i + 1) % a_nSubdivisions], vertices[a_nSubdivisions * 2]);
+		AddTri(vertices[((i + 1) % a_nSubdivisions) + a_nSubdivisions], vertices[i + a_nSubdivisions], vertices[(a_nSubdivisions * 2) + 1]);
+	}
+
+	// Delete your vertices now that you've defined everything
+	delete[] vertices;
+
 	// -------------------------------
 
 	// Adding information about color
@@ -330,7 +376,30 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+
+	// Define the points of the cylinder based on radius, height, and subdivisions (there should be (a_nSubdivisons * 4) vertices)
+	vector3* vertices = new vector3[a_nSubdivisions * 4];
+
+	// For every subdivision, place 4 points, starting at (radius, Y, 0), one at the outside bottom, one at the outside top, one at the inside bottom, and one at the inside top
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		vertices[i] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fOuterRadius, -a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fOuterRadius);
+		vertices[i + a_nSubdivisions] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fOuterRadius, a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fOuterRadius);
+		vertices[i + (a_nSubdivisions * 2)] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fInnerRadius, -a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fInnerRadius);
+		vertices[i + (a_nSubdivisions * 3)] = vector3(cos((i / (float)a_nSubdivisions) * 2 * PI) * a_fInnerRadius, a_fHeight / 2.0f, sin((i / (float)a_nSubdivisions) * 2 * PI) * a_fInnerRadius);
+	}
+
+	// Define the quads in the tube based on the number of points
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		AddQuad(vertices[(i + 1) % a_nSubdivisions], vertices[i], vertices[((i + 1) % a_nSubdivisions) + a_nSubdivisions], vertices[i + a_nSubdivisions]);
+		AddQuad(vertices[i], vertices[(i + 1) % a_nSubdivisions], vertices[i + (a_nSubdivisions * 2)], vertices[((i + 1) % a_nSubdivisions) + (a_nSubdivisions * 2)]);
+		AddQuad(vertices[((i + 1) % a_nSubdivisions) + a_nSubdivisions], vertices[i + a_nSubdivisions], vertices[((i + 1) % a_nSubdivisions) + (a_nSubdivisions * 3)], vertices[i + (a_nSubdivisions * 3)]);
+		AddQuad(vertices[i + (a_nSubdivisions * 2)], vertices[((i + 1) % a_nSubdivisions) + (a_nSubdivisions * 2)], vertices[i + (a_nSubdivisions * 3)], vertices[((i + 1) % a_nSubdivisions) + (a_nSubdivisions * 3)]);
+	}
+
+	// Delete your vertices now that you've defined everything
+	delete[] vertices;
 	// -------------------------------
 
 	// Adding information about color
@@ -362,7 +431,48 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+
+	// Radius of the tube
+	float a_fTubeRadius = (a_fOuterRadius - a_fInnerRadius) / 2.0f;
+
+	// Define the points of the cone based on radius, height, and subdivisions (I define subdivisionsA as around the ring, and subdivisionsB as looping through the ring) (there should be a_nSubdivisionsA * a_nSubdivisionsB vertices)
+	vector3* vertices = new vector3[a_nSubdivisionsA * a_nSubdivisionsB];
+
+	// For every subdivision, place a point, starting at (radius, 0, 0)
+	for (int i = 0; i < a_nSubdivisionsA; ++i)
+	{
+		vector3 tubeCenter = vector3(cos((i / (float)a_nSubdivisionsA) * 2 * PI), 0, sin((i / (float)a_nSubdivisionsA) * 2 * PI)) * (a_fInnerRadius + a_fTubeRadius);	// The center of the circle making up the tube
+		vector3 tubeTrace = (tubeCenter / sqrt(pow(tubeCenter.x, 2) + pow(tubeCenter.y, 2) + pow(tubeCenter.z, 2)));				// Unit vector pointing same direction as tubeCenter
+		for (int j = 0; j < a_nSubdivisionsB; ++j)
+		{
+			vertices[(i * a_nSubdivisionsA) + j] = vector3(
+				cos((j / (float)a_nSubdivisionsB) * 2 * PI) * tubeTrace.x,
+				sin((j / (float)a_nSubdivisionsB) * 2 * PI),
+				cos((j / (float)a_nSubdivisionsB) * 2 * PI) * tubeTrace.z);
+
+			vertices[(i * a_nSubdivisionsA) + j] *= a_fTubeRadius;
+			
+			vertices[(i * a_nSubdivisionsA) + j] += tubeCenter;
+		}
+	}
+
+	// Define the quads in the torus based on the number of points
+	for (int i = 0; i < a_nSubdivisionsA; ++i)
+	{
+		for (int j = 0; j < a_nSubdivisionsB; ++j)
+		{
+			AddQuad(
+				vertices[i + (j * a_nSubdivisionsB)],
+				vertices[((i + 1) % a_nSubdivisionsA) + (j * a_nSubdivisionsB)],
+				vertices[i + (((j + 1) % a_nSubdivisionsB) * a_nSubdivisionsB)],
+				vertices[((i + 1) % a_nSubdivisionsA) + (((j + 1) % a_nSubdivisionsB) * a_nSubdivisionsB)]);
+		}
+	}
+
+	// Delete your vertices now that you've defined your triangles
+	delete[] vertices;
+
 	// -------------------------------
 
 	// Adding information about color
@@ -380,14 +490,61 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions > 6)
+	if (a_nSubdivisions > /*6*/ 12)
 		a_nSubdivisions = 6;
 
 	Release();
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	// Define the points of the sphere based on radius, height, and subdivisions (there should be (a_nSubdivisons * (a_nSubdivisions - 1)) + 2 vertices)
+	vector3* vertices = new vector3[(a_nSubdivisions * (a_nSubdivisions - 1)) + 2];
+
+	vertices[(a_nSubdivisions * (a_nSubdivisions - 1))] = vector3(0.0f, -a_fRadius, 0.0f);	// Bottom center point
+	vertices[(a_nSubdivisions * (a_nSubdivisions - 1)) + 1] = vector3(0.0f, a_fRadius, 0.0f);	// Top center point
+
+	// For every subdivision, place a ring of points
+	for (int i = 0; i < a_nSubdivisions - 1; ++i)
+	{
+		// For every subdivision, place a point in a ring
+		for (int j = 0; j < a_nSubdivisions; ++j)
+		{
+			vertices[(i * a_nSubdivisions) + j] = vector3(
+				cos((j / (float)a_nSubdivisions) * 2 * PI)  * sin(((i + 1) / (float)a_nSubdivisions) * PI),
+				-cos(((i + 1) / (float)a_nSubdivisions) * PI),
+				sin((j / (float)a_nSubdivisions) * 2 * PI)  * sin(((i + 1) / (float)a_nSubdivisions) * PI) );
+
+			vertices[(i * a_nSubdivisions) + j] *= a_fRadius;
+		}
+	}
+
+	// Define the quads in the sphere based on the number of points
+	for (int i = 0; i < a_nSubdivisions - 2; ++i)
+	{
+		for (int j = 0; j < a_nSubdivisions; ++j)
+		{
+			AddQuad(vertices[((j + 1) % a_nSubdivisions) + (i * a_nSubdivisions)],
+				vertices[j + (i * a_nSubdivisions)],
+				vertices[((j + 1) % a_nSubdivisions) + ((i + 1) * a_nSubdivisions)],
+				vertices[j + ((i + 1) * a_nSubdivisions)]);
+		}
+	}
+
+	// Connect the outer rings of the sphere to the tips
+	for (int i = 0; i < a_nSubdivisions; ++i)
+	{
+		AddTri(vertices[i],
+			vertices[(i + 1) % a_nSubdivisions],
+			vertices[(a_nSubdivisions * (a_nSubdivisions - 1))]);
+
+		AddTri(vertices[((i + 1) % a_nSubdivisions) + (a_nSubdivisions * (a_nSubdivisions - 2))],
+			vertices[i + (a_nSubdivisions * (a_nSubdivisions - 2))],
+			vertices[(a_nSubdivisions * (a_nSubdivisions - 1)) + 1]);
+	}
+
+	// Delete your vertices now that you've defined everything
+	delete[] vertices;
 	// -------------------------------
 
 	// Adding information about color
