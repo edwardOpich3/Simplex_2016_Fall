@@ -62,7 +62,15 @@ void Application::Display(void)
 
 
 	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
+	static int currentStop = 0;
+	if (fTimer > 2.0f)
+	{
+		fTimer = 0;
+		currentStop++;
+		currentStop %= 11;
+	}
+
+	v3CurrentPos = m_stopsList[currentStop] + ((m_stopsList[(currentStop + 1) % 11] - m_stopsList[currentStop]) * (fTimer / 2.0f));
 	//-------------------
 	
 
