@@ -59,21 +59,43 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	// Timer
+	static float fTimer = 0;	// The timer variable
+	static uint uClock = m_pSystem->GenClock(); // Create a clock to base the timer off of
+	fTimer += m_pSystem->GetDeltaTime(uClock); // Get the delta of that clock each frame to update the timer
+
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
 	matrix4 m4Offset = IDENTITY_M4; //offset of the orbits, starts as the global coordinate system
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
-	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
+	m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
 
 	// draw a shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
 
+		float speed = 0.5f;		// How many seconds does it take to reach the next stop?
+		int currentStopIndex = (int)(fTimer * (1.0f / speed)) % (i + 3);		// Which stop the current orb is on its path; the stop should never be greater than the number of sides!;
+
 		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		// Divide the unit circle into degrees based on how many sides the current torus has
+		// Multiply that by the index of the current stop to get our position, then just take the cos/sin to get x/y
+		// Multiply the whole vector based on the radius of our torus to place the spheres at the correct distance from the center
+		vector3 v3CurrentPos = vector3(cos(((2 * PI) * (1.0f / (i + 3))) * currentStopIndex),
+										sin(((2 * PI) * (1.0f / (i + 3))) * currentStopIndex),
+										0.0f) * (1.0f + (i * 0.5f));
+
+		// The LERP is calculated and added to the current position on this horridly long line of code
+		// Get the distance between the current stop and the next stop
+		// Multiply that based on the radius of the current torus so the sphere travels the correct distance
+		// Multiply it again by the modulus of the current time (multiplied by the number of seconds it takes to travel between stops) and 1, as the weight
+		v3CurrentPos += vector3(cos(((2 * PI) * (1.0f / (i + 3))) * (currentStopIndex + 1)) - cos(((2 * PI) * (1.0f / (i + 3))) * (currentStopIndex)),
+								sin(((2 * PI) * (1.0f / (i + 3))) * (currentStopIndex + 1)) - sin(((2 * PI) * (1.0f / (i + 3))) * (currentStopIndex)),
+								0.0f) * fmod(fTimer * (1.0f / speed), 1.0f) * (1.0f + (i * 0.5f));
+
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
 		//draw spheres
