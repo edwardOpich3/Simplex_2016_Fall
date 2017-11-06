@@ -31,6 +31,24 @@ void Application::Update(void)
 	//Is the arcball active?
 	ArcBall();
 
+	// Update the camera
+	m_pCamera->SetPosition(m_v3Position);
+
+	// Get the current angle the camera is rotated at
+	vector3 angle = glm::eulerAngles(m_qRotation);
+
+	// Set the camera's directional vectors based on that angle
+	m_v3Front = vector3(sin(angle.y), sin(angle.x), -cos(angle.y) * cos(angle.x));
+	m_v3Right = vector3(cos(angle.y) * cos(angle.z), 0.0f, sin(angle.y));
+	m_v3Up = vector3(sin(angle.z), cos(angle.x) * cos(angle.z), sin(angle.x));
+
+	// Set a point 1 unit in front of the camera for it to look at
+	m_pCamera->SetTarget(m_v3Front + m_v3Position);
+
+	// Set 'up' to the camera's up directional vector
+	//m_pCamera->SetUp(m_v3Up);
+	m_pCamera->SetUp(vector3(0.0f, 1.0f, 0.0f));
+
 	//Is the first person camera active?
 	CameraRotation();
 

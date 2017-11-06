@@ -16,6 +16,13 @@ namespace Simplex
 
 class Application
 {
+	vector3 m_v3Position = vector3();	// Position of the camera
+	quaternion m_qRotation = quaternion();	// Rotation of the camera
+
+	vector3 m_v3Front = vector3(0.0f, 0.0f, -1.0f);	// Forwards vector for the camera
+	vector3 m_v3Right = vector3(1.0f, 0.0f, 0.0f);	// Right vector for the camera
+	vector3 m_v3Up = vector3(0.0f, -1.0f, 0.0f);	// Up vector for the camera
+
 	MyCamera* m_pCamera = nullptr; //Camera class
 	MyMeshManager* m_pMyMeshMngr = nullptr; //My Mesh Manager
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //Programmer

@@ -369,6 +369,14 @@ void Application::CameraRotation(float a_fSpeed)
 		fAngleX += fDeltaMouse * a_fSpeed;
 	}
 	//Change the Yaw and the Pitch of the camera
+
+	// Rotates the camera on the X-axis
+	m_qRotation = m_qRotation * glm::angleAxis(fAngleX, vector3(-1.0f, 0.0f, 0.0f));
+
+	// Rotates the camera on the Y-axis
+	m_qRotation = m_qRotation * glm::angleAxis(fAngleY, vector3(0.0f, -1.0f, 0.0f));
+
+
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
 }
 //Keyboard
@@ -385,6 +393,39 @@ void Application::ProcessKeyboard(void)
 
 	if (fMultiplier)
 		fSpeed *= 5.0f;
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	{
+		m_v3Position += m_v3Front * fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	{
+		m_v3Position -= m_v3Front * fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+	{
+		m_v3Position += m_v3Right * fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+	{
+		m_v3Position -= m_v3Right * fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+	{
+		//m_v3Position -= m_v3Up * fSpeed;
+		m_v3Position += vector3(0.0f, -1.0f, 0.0f) * fSpeed;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+	{
+		//m_v3Position += m_v3Up * fSpeed;
+		m_v3Position -= vector3(0.0f, -1.0f, 0.0f) * fSpeed;
+	}
+
 #pragma endregion
 }
 //Joystick
