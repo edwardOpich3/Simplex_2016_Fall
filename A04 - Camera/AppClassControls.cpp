@@ -394,6 +394,7 @@ void Application::ProcessKeyboard(void)
 	if (fMultiplier)
 		fSpeed *= 5.0f;
 
+	// Move in the direction of whatever vector corresponds with the key pressed, at the appropriate speed.
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
 		m_v3Position += m_v3Front * fSpeed;
@@ -416,13 +417,11 @@ void Application::ProcessKeyboard(void)
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 	{
-		//m_v3Position -= m_v3Up * fSpeed;
 		m_v3Position += vector3(0.0f, -1.0f, 0.0f) * fSpeed;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 	{
-		//m_v3Position += m_v3Up * fSpeed;
 		m_v3Position -= vector3(0.0f, -1.0f, 0.0f) * fSpeed;
 	}
 
