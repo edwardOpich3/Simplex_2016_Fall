@@ -85,8 +85,63 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 	
 	//your code goes here---------------------
-	m_v3MinG = m_v3MinL;
-	m_v3MaxG = m_v3MaxL;
+
+	// Create the vertices of the bounding box
+	vector3 aabb[8];
+
+	aabb[0] = m_v3MinL;
+	aabb[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
+	aabb[2] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MinL.z);
+	aabb[3] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
+	aabb[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	aabb[5] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
+	aabb[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
+	aabb[7] = m_v3MaxL;
+
+	// Put it in world space
+	for (uint i = 0; i < 8; i++)
+	{
+		aabb[i] = vector3(m_m4ToWorld * vector4(aabb[i], 1.0f));
+	}
+
+	// Initialize min and max
+	m_v3MaxG = aabb[0];
+	m_v3MinG = aabb[0];
+
+	// If the corners of the box aren't at the extremes, adjust them!
+	for (uint i = 0; i < 8; i++)
+	{
+		// X
+		if (m_v3MaxG.x < aabb[i].x)
+		{
+			m_v3MaxG.x = aabb[i].x;
+		}
+		else if(m_v3MinG.x > aabb[i].x)
+		{
+			m_v3MinG.x = aabb[i].x;
+		}
+
+		// Y
+		if (m_v3MaxG.y < aabb[i].y)
+		{
+			m_v3MaxG.y = aabb[i].y;
+		}
+		else if (m_v3MinG.y > aabb[i].y)
+		{
+			m_v3MinG.y = aabb[i].y;
+		}
+
+		// Z
+		if (m_v3MaxG.z < aabb[i].z)
+		{
+			m_v3MaxG.z = aabb[i].z;
+		}
+		else if (m_v3MinG.z > aabb[i].z)
+		{
+			m_v3MinG.z = aabb[i].z;
+		}
+	}
+
 	//----------------------------------------
 
 	//we calculate the distance between min and max vectors
