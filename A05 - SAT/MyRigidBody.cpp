@@ -287,6 +287,77 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
 
+	float thisRadius = m_fRadius;
+	float otherRadius = a_pOther->GetRadius();
+
+	// m_v3HalfWidth
+	// a_pOther->GetHalfWidth()
+
+	// The coordinate system for our object, translated to global coordinates
+	vector3 localAxes[3];
+	localAxes[0] = vector3(vector4(1.0f, 0.0f, 0.0f, 1.0f) * m_m4ToWorld);
+	localAxes[1] = vector3(vector4(0.0f, 1.0f, 0.0f, 1.0f) * m_m4ToWorld);
+	localAxes[2] = vector3(vector4(0.0f, 0.0f, 1.0f, 1.0f) * m_m4ToWorld);
+
+	// The coordinate system for the other object, translated to global coordinates
+	vector3 otherAxes[3];
+	otherAxes[0] = vector3(vector4(1.0f, 0.0f, 0.0f, 1.0f) * a_pOther->GetModelMatrix());
+	otherAxes[1] = vector3(vector4(0.0f, 1.0f, 0.0f, 1.0f) * a_pOther->GetModelMatrix());
+	otherAxes[2] = vector3(vector4(0.0f, 0.0f, 1.0f, 1.0f) * a_pOther->GetModelMatrix());
+
+	// The matrix to convert a point in the other coordinate system to our coordinates
+	matrix3 m_m3ToThisModel;
+	for (unsigned int i = 0; i < 3; i++)
+	{
+		for (unsigned int j = 0; j < 3; j++)
+		{
+			m_m3ToThisModel[i][j] = glm::dot(localAxes[i], otherAxes[j]);
+		}
+	}
+
+	// Distance between the two objects' centers, converted to our local coordinate system
+	vector3 distance = GetCenterGlobal() - a_pOther->GetCenterGlobal();
+	distance = vector3(glm::dot(distance, localAxes[0]), glm::dot(distance, localAxes[1]), glm::dot(distance, localAxes[2]));
+
+	// Absolute conversion matrix, for some reason? Ask what's up with this later!
+	// Also, we add epsilon to it to avoid rounding errors, erring on the side of caution.
+	matrix3 m_m3AbsToThisModel;
+	for (unsigned int i = 0; i < 3; i++)
+	{
+		for (unsigned int j = 0; j < 3; j++)
+		{
+			m_m3AbsToThisModel[i][j] = glm::abs(m_m3ToThisModel[i][j]) + glm::epsilon<float>();
+		}
+	}
+
+	// Local coordinate system check (x, y, z == 0, 1, 2)
+	for (unsigned int i = 0; i < 3; i++)
+	{
+		thisRadius = m_v3HalfWidth[i];
+
+		// Have to convert the other's half-widths into local space
+		otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[i][0] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[i][1] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[i][2];
+
+		// If the distance is greater than the combination of both radii, then this axis separates the objects
+		if (glm::abs(distance[i]) > thisRadius + otherRadius)
+		{
+			return eSATResults::SAT_AX + i;
+		}
+	}
+
+	// Other local coordinate system check (x, y, z == 0, 1, 2)
+	for (unsigned int i = 0; i < 3; i++)
+	{
+		thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[0][i] + m_v3HalfWidth[1] * m_m3AbsToThisModel[1][i] + m_v3HalfWidth[2] * m_m3AbsToThisModel[2][i];
+
+		otherRadius = a_pOther->GetHalfWidth()[i];
+
+		if (glm::abs(distance[0] * m_m3ToThisModel[0][i] + distance[1] * m_m3ToThisModel[1][i] + distance[2] * m_m3ToThisModel[2][i]) > thisRadius + otherRadius)
+		{
+			return eSATResults::SAT_BX + i;
+		}
+	}
+
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
 }
