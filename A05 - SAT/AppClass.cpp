@@ -41,12 +41,18 @@ void Application::Update(void)
 	matrix4 mCreeper = glm::translate(m_v3Creeper) * ToMatrix4(m_qCreeper) * ToMatrix4(m_qArcBall);
 	m_pCreeper->SetModelMatrix(mCreeper);
 	m_pCreeperRB->SetModelMatrix(mCreeper);
+
+	m_pCreeperRB->SetVisibleBS(true);
+
 	m_pMeshMngr->AddAxisToRenderList(mCreeper);
 
 	//Set model matrix to Steve
 	matrix4 mSteve = glm::translate(vector3(2.25f, 0.0f, 0.0f)) * glm::rotate(IDENTITY_M4, -55.0f, AXIS_Z);
 	m_pSteve->SetModelMatrix(mSteve);
 	m_pSteveRB->SetModelMatrix(mSteve);
+
+	m_pSteveRB->SetVisibleBS(true);
+
 	m_pMeshMngr->AddAxisToRenderList(mSteve);
 
 	bool bColliding = m_pCreeperRB->IsColliding(m_pSteveRB);

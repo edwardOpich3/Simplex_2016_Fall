@@ -335,12 +335,29 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	{
 		thisRadius = m_v3HalfWidth[i];
 
-		// Have to convert the other's half-widths into local space
+		// Project the other radius onto our axis
 		otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[i][0] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[i][1] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[i][2];
 
 		// If the distance is greater than the combination of both radii, then this axis separates the objects
 		if (glm::abs(distance[i]) > thisRadius + otherRadius)
 		{
+			int myPlane;
+			
+			if (i == 0)
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, C_RED);
+			}
+			else if (i == 1)
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, C_GREEN);
+			}
+			else
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, C_BLUE);
+			}
+
+			m_pMeshMngr->AddMeshToRenderList(myPlane, IDENTITY_M4);
+
 			return eSATResults::SAT_AX + i;
 		}
 	}
@@ -354,9 +371,106 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 
 		if (glm::abs(distance[0] * m_m3ToThisModel[0][i] + distance[1] * m_m3ToThisModel[1][i] + distance[2] * m_m3ToThisModel[2][i]) > thisRadius + otherRadius)
 		{
+			int myPlane;
+
+			if (i == 0)
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, vector3(0.5f, 0.0f, 0.0f));
+			}
+			else if (i == 1)
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, vector3(0.0f, 0.5f, 0.0f));
+			}
+			else
+			{
+				myPlane = m_pMeshMngr->GeneratePlane(5.0f, vector3(0.0f, 0.0f, 0.5f));
+			}
+
+			m_pMeshMngr->AddMeshToRenderList(myPlane, IDENTITY_M4);
+
 			return eSATResults::SAT_BX + i;
 		}
 	}
+
+	/*// Local.X cross Other.X
+	thisRadius = m_v3HalfWidth[1] * m_m3AbsToThisModel[2][0] + m_v3HalfWidth[2] * m_m3AbsToThisModel[1][0];
+	otherRadius = a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[0][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[0][1];
+
+	if (glm::abs(distance[2] * m_m3ToThisModel[1][0] - distance[1] * m_m3ToThisModel[2][0]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AXxBX;
+	}
+
+	// Local.X cross Other.Y
+	thisRadius = m_v3HalfWidth[1] * m_m3AbsToThisModel[2][1] + m_v3HalfWidth[2] * m_m3AbsToThisModel[1][1];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[0][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[0][0];
+
+	if (glm::abs(distance[2] * m_m3ToThisModel[1][1] - distance[1] * m_m3ToThisModel[2][1]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AXxBY;
+	}
+
+	// Local.X cross Other.Z
+	thisRadius = m_v3HalfWidth[1] * m_m3AbsToThisModel[2][2] + m_v3HalfWidth[2] * m_m3AbsToThisModel[1][2];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[0][1] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[0][0];
+	if (glm::abs(distance[2] * m_m3ToThisModel[1][2] - distance[1] * m_m3ToThisModel[2][2]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AXxBZ;
+	}
+
+	// Local.Y cross Other.X
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[2][0] + m_v3HalfWidth[2] * m_m3AbsToThisModel[0][0];
+	otherRadius = a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[1][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[1][1];
+
+	if (glm::abs(distance[0] * m_m3ToThisModel[2][0] - distance[2] * m_m3ToThisModel[0][0]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AYxBX;
+	}
+
+	// Local.Y cross Other.Y
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[2][1] + m_v3HalfWidth[2] * m_m3AbsToThisModel[0][1];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[1][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[1][0];
+
+	if (glm::abs(distance[0] * m_m3ToThisModel[2][1] - distance[2] * m_m3ToThisModel[0][1]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AYxBY;
+	}
+
+	// Local.Y cross Other.Z
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[2][2] + m_v3HalfWidth[2] * m_m3AbsToThisModel[0][2];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[1][1] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[1][0];
+
+	if (glm::abs(distance[0] * m_m3ToThisModel[2][2] - distance[2] * m_m3ToThisModel[0][2]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AYxBZ;
+	}
+
+	// Local.Z cross Other.X
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[1][0] + m_v3HalfWidth[1] * m_m3AbsToThisModel[0][0];
+	otherRadius = a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[2][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[2][1];
+
+	if (glm::abs(distance[1] * m_m3ToThisModel[0][0] - distance[0] * m_m3ToThisModel[1][0]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AZxBX;
+	}
+
+	// Local.Z cross Other.Y
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[1][1] + m_v3HalfWidth[1] * m_m3AbsToThisModel[0][1];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[2][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[2][0];
+
+	if (glm::abs(distance[1] * m_m3ToThisModel[0][1] - distance[0] * m_m3ToThisModel[1][1]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AZxBY;
+	}
+
+	// Local.Z cross Other.Z
+	thisRadius = m_v3HalfWidth[0] * m_m3AbsToThisModel[1][2] + m_v3HalfWidth[1] * m_m3AbsToThisModel[0][2];
+	otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[2][1] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[2][0];
+
+	if (glm::abs(distance[1] * m_m3ToThisModel[0][2] - distance[0] * m_m3ToThisModel[1][2]) > thisRadius + otherRadius)
+	{
+		return eSATResults::SAT_AZxBZ;
+	}*/
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
