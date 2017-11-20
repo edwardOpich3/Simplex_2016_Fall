@@ -290,9 +290,6 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	float thisRadius = m_fRadius;
 	float otherRadius = a_pOther->GetRadius();
 
-	// m_v3HalfWidth
-	// a_pOther->GetHalfWidth()
-
 	// The coordinate system for our object, translated to global coordinates
 	vector3 localAxes[3];
 	localAxes[0] = vector3(vector4(1.0f, 0.0f, 0.0f, 1.0f) * m_m4ToWorld);
@@ -311,14 +308,9 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	{
 		for (unsigned int j = 0; j < 3; j++)
 		{
-			//m_m3ToThisModel[i][j] = glm::dot(localAxes[i], otherAxes[j]);
 			m_m3ToThisModel[i][j] = glm::dot(localAxes[i], otherAxes[j]);
 		}
 	}
-
-	vector3 test = otherAxes[0] * m_m3ToThisModel;
-	vector3 test1 = otherAxes[1] * m_m3ToThisModel;
-	vector3 test2 = otherAxes[2] * m_m3ToThisModel;
 
 	// Distance between the two objects' centers, converted to our local coordinate system
 	vector3 distance = a_pOther->GetCenterGlobal() - GetCenterGlobal();
@@ -397,7 +389,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 		}
 	}
 
-	/*// Local.X cross Other.X
+	// Local.X cross Other.X
 	thisRadius = m_v3HalfWidth[1] * m_m3AbsToThisModel[2][0] + m_v3HalfWidth[2] * m_m3AbsToThisModel[1][0];
 	otherRadius = a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[0][2] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[0][1];
 
@@ -475,7 +467,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	if (glm::abs(distance[1] * m_m3ToThisModel[0][2] - distance[0] * m_m3ToThisModel[1][2]) > thisRadius + otherRadius)
 	{
 		return eSATResults::SAT_AZxBZ;
-	}*/
+	}
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
