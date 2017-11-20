@@ -292,15 +292,15 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 
 	// The coordinate system for our object, translated to global coordinates
 	vector3 localAxes[3];
-	localAxes[0] = vector3(vector4(1.0f, 0.0f, 0.0f, 1.0f) * m_m4ToWorld);
-	localAxes[1] = vector3(vector4(0.0f, 1.0f, 0.0f, 1.0f) * m_m4ToWorld);
-	localAxes[2] = vector3(vector4(0.0f, 0.0f, 1.0f, 1.0f) * m_m4ToWorld);
+	localAxes[0] = vector3(m_m4ToWorld * vector4(1.0f, 0.0f, 0.0f, 0.0f));
+	localAxes[1] = vector3(m_m4ToWorld * vector4(0.0f, 1.0f, 0.0f, 0.0f));
+	localAxes[2] = vector3(m_m4ToWorld * vector4(0.0f, 0.0f, 1.0f, 0.0f));
 
 	// The coordinate system for the other object, translated to global coordinates
 	vector3 otherAxes[3];
-	otherAxes[0] = vector3(vector4(1.0f, 0.0f, 0.0f, 1.0f) * a_pOther->GetModelMatrix());
-	otherAxes[1] = vector3(vector4(0.0f, 1.0f, 0.0f, 1.0f) * a_pOther->GetModelMatrix());
-	otherAxes[2] = vector3(vector4(0.0f, 0.0f, 1.0f, 1.0f) * a_pOther->GetModelMatrix());
+	otherAxes[0] = vector3(a_pOther->GetModelMatrix() * vector4(1.0f, 0.0f, 0.0f, 0.0f));
+	otherAxes[1] = vector3(a_pOther->GetModelMatrix() * vector4(0.0f, 1.0f, 0.0f, 0.0f));
+	otherAxes[2] = vector3(a_pOther->GetModelMatrix() * vector4(0.0f, 0.0f, 1.0f, 0.0f));
 
 	// The matrix to convert a point in the other coordinate system to our coordinates
 	matrix3 m_m3ToThisModel;
