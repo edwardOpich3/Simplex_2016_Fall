@@ -311,12 +311,17 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	{
 		for (unsigned int j = 0; j < 3; j++)
 		{
+			//m_m3ToThisModel[i][j] = glm::dot(localAxes[i], otherAxes[j]);
 			m_m3ToThisModel[i][j] = glm::dot(localAxes[i], otherAxes[j]);
 		}
 	}
 
+	vector3 test = otherAxes[0] * m_m3ToThisModel;
+	vector3 test1 = otherAxes[1] * m_m3ToThisModel;
+	vector3 test2 = otherAxes[2] * m_m3ToThisModel;
+
 	// Distance between the two objects' centers, converted to our local coordinate system
-	vector3 distance = GetCenterGlobal() - a_pOther->GetCenterGlobal();
+	vector3 distance = a_pOther->GetCenterGlobal() - GetCenterGlobal();
 	distance = vector3(glm::dot(distance, localAxes[0]), glm::dot(distance, localAxes[1]), glm::dot(distance, localAxes[2]));
 
 	// Absolute conversion matrix, for some reason? Ask what's up with this later!
@@ -339,7 +344,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 		otherRadius = a_pOther->GetHalfWidth()[0] * m_m3AbsToThisModel[i][0] + a_pOther->GetHalfWidth()[1] * m_m3AbsToThisModel[i][1] + a_pOther->GetHalfWidth()[2] * m_m3AbsToThisModel[i][2];
 
 		// If the distance is greater than the combination of both radii, then this axis separates the objects
-		if (glm::abs(distance[i]) > thisRadius + otherRadius)
+		if (glm::abs(distance[i]) > glm::abs(thisRadius + otherRadius))
 		{
 			int myPlane;
 			
@@ -369,7 +374,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 
 		otherRadius = a_pOther->GetHalfWidth()[i];
 
-		if (glm::abs(distance[0] * m_m3ToThisModel[0][i] + distance[1] * m_m3ToThisModel[1][i] + distance[2] * m_m3ToThisModel[2][i]) > thisRadius + otherRadius)
+		if (glm::abs(distance[0] * m_m3ToThisModel[0][i] + distance[1] * m_m3ToThisModel[1][i] + distance[2] * m_m3ToThisModel[2][i]) > glm::abs(thisRadius + otherRadius))
 		{
 			int myPlane;
 
