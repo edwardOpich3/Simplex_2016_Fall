@@ -121,7 +121,8 @@ void MySolver::ResolveCollision(MySolver* a_pOther)
 	else
 	{
 		vector3 v3Direction = m_v3Position - a_pOther->m_v3Position;
-		v3Direction = glm::normalize(v3Direction);
+		if(glm::length(v3Direction) != 0)
+			v3Direction = glm::normalize(v3Direction);
 		v3Direction *= 0.04f;
 		ApplyForce(v3Direction);
 		a_pOther->ApplyForce(-v3Direction);
