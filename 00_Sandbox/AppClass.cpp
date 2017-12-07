@@ -2,6 +2,9 @@
 using namespace Simplex;
 void Application::InitVariables(void)
 {
+	////Alberto needed this at this position for software recording.
+	//m_pWindow->setPosition(sf::Vector2i(710, 0));
+
 	//Music
 	String sRoute = m_pSystem->m_pFolder->GetFolderData();
 	sRoute += m_pSystem->m_pFolder->GetFolderAudio();

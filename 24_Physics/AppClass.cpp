@@ -11,7 +11,7 @@ void Application::InitVariables(void)
 	m_pLightMngr->SetPosition(vector3(0.0f, 3.0f, 13.0f), 1); //set the position of first light (0 is reserved for ambient light)
 
 	m_pEntityMngr->AddEntity("Minecraft\\Steve.obj", "Steve");
-	//m_pEntityMngr->UsePhysicsSolver();
+	m_pEntityMngr->UsePhysicsSolver();
 	
 	for (int i = 0; i < 100; i++)
 	{
@@ -20,10 +20,9 @@ void Application::InitVariables(void)
 		v3Position.y = 0.0f;
 		matrix4 m4Position = glm::translate(v3Position);
 		m_pEntityMngr->SetModelMatrix(m4Position);
-		//m_pEntityMngr->UsePhysicsSolver();
+		m_pEntityMngr->UsePhysicsSolver();
 		//m_pEntityMngr->SetMass(i+1);
 	}
-	m_pEntityMngr->AddEntity("Portal//Wheatley.fbx");
 }
 void Application::Update(void)
 {
