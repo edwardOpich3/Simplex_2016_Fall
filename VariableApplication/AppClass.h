@@ -6,7 +6,7 @@ Date: 2017/05
 #define __APPLICATION_H_
 
 #include <SFML\Graphics.hpp>
-#include <vld.h>
+//#include <vld.h>
 #include "ImGuiObject.h"
 
 #ifdef USINGSIMPLEX
