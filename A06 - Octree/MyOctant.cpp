@@ -6,29 +6,68 @@ MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 {
 	m_uMaxLevel = a_nMaxLevel;
 	m_uIdealEntityCount = a_nIdealEntityCount;
+
+	Init();
 }
 
 MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 {
 	m_v3Center = a_v3Center;
 	m_fSize = a_fSize;
+
+	Init();
 }
 
 MyOctant::MyOctant(MyOctant const & other)
 {
+	*this = other;
 }
 
 MyOctant & MyOctant::operator=(MyOctant const & other)
 {
-	// TODO: insert return statement here
+	m_uID = other.m_uID;
+	m_uLevel = other.m_uLevel;
+	m_uChildren = other.m_uChildren;
+
+	m_fSize = other.m_fSize;
+
+	m_v3Center = other.m_v3Center;
+	m_v3Max = other.m_v3Max;
+	m_v3Min = other.m_v3Min;
+
+	m_pParent = other.m_pParent;
+
+	// If this octant has children, they need to be destroyed first, otherwise they will be inaccesible!
+	KillBranches();
+
+	for (uint i = 0; i < other.m_uChildren; i++)
+	{
+		m_pChild[i] = other.m_pChild[i];
+		m_uChildren++;
+	}
+
+	ClearEntityList();
+	for (uint i = 0; i < other.m_EntityList.size(); i++)
+	{
+		m_EntityList.push_back(other.m_EntityList[i]);
+	}
+	
+	m_pRoot = other.m_pRoot;
+
+	return *this;
 }
 
 MyOctant::~MyOctant()
 {
+	Release();
 }
 
 void MyOctant::Swap(MyOctant & other)
 {
+	MyOctant temp = *this;
+
+	*this = other;
+	other = temp;
 }
 
 float MyOctant::GetSize()
@@ -53,17 +92,33 @@ vector3 MyOctant::GetMaxGlobal()
 
 bool MyOctant::IsColliding(uint a_uRBIndex)
 {
+	// Iterate through every entity in our octant and check if they are colliding with the entity provided
+	MyEntity* entity = m_pEntityMngr->GetEntity(a_uRBIndex);
+
+	for (uint i = 0; i < m_EntityList.size(); i++)
+	{
+		// If the two entities being checked aren't the same and they're colliding, return true
+		if (m_EntityList[i] != a_uRBIndex && entity->IsColliding(m_pEntityMngr->GetEntity(m_EntityList[i])))
+		{
+			return true;
+		}
+	}
+
+	// If we make it here, we've checked every entity in the octant and haven't detected a collision, so there isn't one.
 	return false;
 }
 
 void MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
 {
-	
+	if (m_uID == a_nIndex)
+	{
+		Display(a_v3Color);
+	}
 }
 
 void MyOctant::Display(vector3 a_v3Color)
 {
-	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_v3Center), a_v3Color, RENDER_SOLID);
+	m_pMeshMngr->AddMeshToRenderList(m_pMeshMngr->GenerateCube(m_fSize, a_v3Color), glm::translate(m_v3Center), RENDER_SOLID);
 }
 
 void MyOctant::DisplayLeafs(vector3 a_v3Color)
@@ -85,7 +140,7 @@ void MyOctant::ClearEntityList()
 void MyOctant::Subdivide()
 {
 	// If we're at the maximum level, there's no need to continue
-	if (m_uLevel == m_uMaxLevel)
+	if (m_uLevel >= m_uMaxLevel)
 	{
 		return;
 	}
@@ -134,14 +189,15 @@ void MyOctant::KillBranches()
 	for (uint i = 0; i < m_uChildren; i++)
 	{
 		m_pChild[i]->KillBranches();
+		m_pChild[i]->Release();
 	}
 
-	// If we've made it this far, we're at a leaf; delete the current octant
-	Release();
+	m_uChildren = 0;
 }
 
 void MyOctant::ConstructTree(uint a_nMaxLevel = 3)
 {
+	// If this function has ben called, that means that the octant it was called on was the root! Subdivide and conquer! Look up how an octree works! XD
 
 }
 
@@ -152,17 +208,29 @@ void MyOctant::AssignIDtoEntity()
 
 uint MyOctant::GetOctantCount()
 {
-
+	return m_uOctantCount;
 }
 
 void MyOctant::Release()
 {
+	m_pParent = nullptr;
+	KillBranches();
 
+	for (uint i = 0; i < 8; i++)
+	{
+		m_pChild[i] = nullptr;
+	}
+
+	m_pRoot = nullptr;
+
+	m_lChild.clear();
+
+	m_uOctantCount--;
 }
 
 void MyOctant::Init()
 {
-
+	m_uOctantCount++;
 }
 
 void MyOctant::ConstructList()

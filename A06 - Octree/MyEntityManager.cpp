@@ -173,7 +173,7 @@ void Simplex::MyEntityManager::Update(void)
 		m_mEntityArray[i]->ClearCollisionList();
 	}
 
-	//check collisions
+	//check collisions; HERE IS THE PLACE YOU WOULD PUT THE SPACIAL OPTIMIZATION
 	for (uint i = 0; i < m_uEntityCount - 1; i++)
 	{
 		for (uint j = i + 1; j < m_uEntityCount; j++)
