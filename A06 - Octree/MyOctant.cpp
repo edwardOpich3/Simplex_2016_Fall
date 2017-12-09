@@ -52,6 +52,8 @@ MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	// As such, max and min should all be based on the most extreme coordinate of the max and min entities.
 
 	// Once we have the 6 in question, the our max vector will be determined by the maxes of those 3 entities at the positive extreme
+	m_v3Max = entities[0]->GetCenterGlobal();
+	m_v3Min = entities[3]->GetCenterGlobal();
 	for (uint i = 0; i < 3; i++)
 	{
 		if (entities[i]->GetCenterGlobal()[i] > m_v3Max[i])
@@ -263,8 +265,12 @@ void MyOctant::Subdivide()
 
 	for (uint i = 0; i < m_uChildren; i++)
 	{
-		// TODO: Find a way to algorithmically determine the centers of the 8 children
-		m_pChild[i] = new MyOctant(vector3(), m_fSize / 2.0f);
+		// Algorithmically determine the centers of the 8 children; NOTE! Max and Min are GLOBAL, not local!
+		vector3 childCenter = vector3(m_v3Center.x - ((m_v3Max.x - m_v3Center.x) / 2.0f) + ((m_v3Max.x - m_v3Center.x) * (i % 2)),
+			m_v3Center.y - ((m_v3Max.y - m_v3Center.y) / 2.0f) + ((m_v3Max.y - m_v3Center.y) * ((i / 2) % 2)),
+			m_v3Center.z - ((m_v3Max.z - m_v3Center.z) / 2.0f) + ((m_v3Max.z - m_v3Center.z) * ((i / 4) % 2)));
+
+		m_pChild[i] = new MyOctant(childCenter, m_fSize / 2.0f);
 
 		m_pChild[i]->m_pParent = this;
 		m_pChild[i]->m_uLevel = m_uLevel + 1;
