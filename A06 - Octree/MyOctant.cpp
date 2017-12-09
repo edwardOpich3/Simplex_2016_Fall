@@ -319,7 +319,16 @@ void MyOctant::KillBranches()
 
 void MyOctant::ConstructTree(uint a_nMaxLevel)
 {
-	// If this function has been called, that means that the octant it was called on was the root! Subdivide and conquer! Look up how an octree works! XD
+	// If this function has been called, that means that the octant it was called on was the root! Subdivide and conquer!
+	Subdivide();
+	for (uint i = 0; i < 8; i++)
+	{
+		// Only subdivide again if the child contains entities and its level is less than our maximum!
+		if (m_pChild[i]->ContainsMoreThan(0) && m_pChild[i]->m_uLevel < a_nMaxLevel)
+		{
+			m_pChild[i]->ConstructTree(a_nMaxLevel);
+		}
+	}
 
 }
 

@@ -6,6 +6,7 @@ void Simplex::MyEntityManager::Init(void)
 {
 	m_uEntityCount = 0;
 	m_mEntityArray = nullptr;
+	m_pOctree = nullptr;
 }
 void Simplex::MyEntityManager::Release(void)
 {
