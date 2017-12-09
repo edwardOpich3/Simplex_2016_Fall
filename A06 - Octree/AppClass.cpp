@@ -34,6 +34,11 @@ void Application::InitVariables(void)
 }
 void Application::Update(void)
 {
+	m_pEntityMngr->ClearDimensionSetAll();
+	SafeDelete(m_pOctree);
+
+	m_pOctree = new MyOctant(m_uOctantLevels);
+
 	//Update the system so it knows how much time has passed since the last call
 	m_pSystem->Update();
 
@@ -56,6 +61,7 @@ void Application::Display(void)
 
 	//display octree
 	//m_pRoot->Display();
+	m_pOctree->Display(m_uOctantID);
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();

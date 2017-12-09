@@ -80,7 +80,7 @@ MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	}
 
 	// The size will be calculated from the length of either the min or max vector
-	m_fSize = sqrtf(powf((m_v3Max - m_v3Min).length(), 2.0f) / 3.0f);
+	m_fSize = m_v3Max.x * 2.0f;
 }
 
 // Should only be called by a parent octant?
@@ -163,10 +163,7 @@ MyOctant & MyOctant::operator=(MyOctant const & other)
 	}
 
 	ClearEntityList();
-	for (uint i = 0; i < other.m_EntityList.size(); i++)
-	{
-		m_EntityList.push_back(other.m_EntityList[i]);
-	}
+	m_EntityList = other.m_EntityList;
 	
 	m_pRoot = other.m_pRoot;
 
@@ -226,15 +223,19 @@ bool MyOctant::IsColliding(uint a_uRBIndex)
 
 void MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
 {
-	if (m_uID == a_nIndex)
+	if (a_nIndex >= m_uOctantCount)
 	{
-		Display(a_v3Color);
+		DisplayLeafs();
+	}
+	else
+	{
+		m_pRoot->m_lChild[a_nIndex]->Display();
 	}
 }
 
 void MyOctant::Display(vector3 a_v3Color)
 {
-	m_pMeshMngr->AddMeshToRenderList(m_pMeshMngr->GenerateCube(m_fSize, a_v3Color), glm::translate(m_v3Center), RENDER_SOLID);
+	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(IDENTITY_M4, m_v3Center) * glm::scale(IDENTITY_M4, vector3(1.0f) * m_fSize), a_v3Color);
 }
 
 void MyOctant::DisplayLeafs(vector3 a_v3Color)
@@ -243,9 +244,11 @@ void MyOctant::DisplayLeafs(vector3 a_v3Color)
 	{
 		if (!m_pChild[i]->m_EntityList.empty())
 		{
-			m_pChild[i]->Display(a_v3Color);
+			m_pChild[i]->DisplayLeafs(a_v3Color);
 		}
 	}
+
+	Display();
 }
 
 void MyOctant::ClearEntityList()

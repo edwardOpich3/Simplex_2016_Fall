@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicX", "BasicX\BasicX.vcxproj", "{E745E25C-0143-42AC-A486-1395A4C972AE}"
 EndProject
@@ -137,6 +137,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ex01C", "Ex01C\Ex01C.vcxproj", "{514CCC33-4137-42DA-869E-C5B450738BDC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ex01Cs", "Ex01Cs\Ex01Cs.vcxproj", "{C9047592-F649-4E36-A1CA-3E7CFCF12C42}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeFall", "Freefall\Freefall.vcxproj", "{56890325-7E33-4761-9169-F5E17707D118}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -322,6 +324,10 @@ Global
 		{C9047592-F649-4E36-A1CA-3E7CFCF12C42}.Debug|x86.Build.0 = Debug|Win32
 		{C9047592-F649-4E36-A1CA-3E7CFCF12C42}.Release|x86.ActiveCfg = Release|Win32
 		{C9047592-F649-4E36-A1CA-3E7CFCF12C42}.Release|x86.Build.0 = Release|Win32
+		{56890325-7E33-4761-9169-F5E17707D118}.Debug|x86.ActiveCfg = Debug|Win32
+		{56890325-7E33-4761-9169-F5E17707D118}.Debug|x86.Build.0 = Debug|Win32
+		{56890325-7E33-4761-9169-F5E17707D118}.Release|x86.ActiveCfg = Release|Win32
+		{56890325-7E33-4761-9169-F5E17707D118}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
