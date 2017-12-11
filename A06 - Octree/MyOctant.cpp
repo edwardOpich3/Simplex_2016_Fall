@@ -23,28 +23,40 @@ MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 		m_EntityList.push_back(i);
 	}
 
+	// Initialize max and min
+	m_v3Max = m_v3Min = m_pEntityMngr->GetRigidBody(0)->GetCenterGlobal();
+
 	// Have to define the size and center yourself via the entities!
 	// Loop through the entity manager's list and determine the two entities whose centers are furthest apart on each axis
-	vector3 distance = vector3(0.0f);
-	std::vector<MyRigidBody*> entities(6);
 	for (uint i = 0; i < m_pEntityMngr->GetEntityCount(); i++)
 	{
-		MyRigidBody* a = m_pEntityMngr->GetEntity(i)->GetRigidBody();
-		for (uint j = i + 1; j < m_pEntityMngr->GetEntityCount(); j++)
-		{
-			for (uint k = 0; k < 3; k++)
-			{
-				MyRigidBody* b = m_pEntityMngr->GetEntity(j)->GetRigidBody();
-				int testDist = 0;
-				if ((testDist = glm::abs(a->GetCenterGlobal() - b->GetCenterGlobal())[k]) > distance[k])
-				{
-					distance[k] = testDist;
+		MyRigidBody* a = m_pEntityMngr->GetRigidBody(i);
 
-					// the entities vector will be ordered maxX, maxY, maxZ, minX, minY, minZ
-					entities[k] = a;
-					entities[k + 3] = b;
-				}
-			}
+		if (a->GetMaxGlobal().x > m_v3Max.x)
+		{
+			m_v3Max.x = a->GetMaxGlobal().x;
+		}
+		else if (a->GetMinGlobal().x < m_v3Min.x)
+		{
+			m_v3Min.x = a->GetMinGlobal().x;
+		}
+
+		if (a->GetMaxGlobal().y > m_v3Max.y)
+		{
+			m_v3Max.y = a->GetMaxGlobal().y;
+		}
+		else if (a->GetMinGlobal().y < m_v3Min.y)
+		{
+			m_v3Min.y = a->GetMinGlobal().y;
+		}
+
+		if (a->GetMaxGlobal().z > m_v3Max.z)
+		{
+			m_v3Max.z = a->GetMaxGlobal().z;
+		}
+		else if (a->GetMinGlobal().z < m_v3Min.z)
+		{
+			m_v3Min.z = a->GetMinGlobal().z;
 		}
 	}
 
@@ -52,38 +64,38 @@ MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	// As such, max and min should all be based on the most extreme coordinate of the max and min entities.
 
 	// Once we have the 6 in question, the our max vector will be determined by the maxes of those 3 entities at the positive extreme
-	m_v3Max = entities[0]->GetCenterGlobal();
-	m_v3Min = entities[3]->GetCenterGlobal();
-	for (uint i = 0; i < 3; i++)
-	{
-		if (entities[i]->GetCenterGlobal()[i] > m_v3Max[i])
-		{
-			for (uint j = 0; j < 3; j++)
-			{
-				m_v3Max[j] = entities[i]->GetCenterGlobal()[i];
-			}
-		}
-
-		if (entities[i + 3]->GetCenterGlobal()[i] < m_v3Min[i])
-		{
-			for (uint j = 0; j < 3; j++)
-			{
-				m_v3Min[j] = entities[i + 3]->GetCenterGlobal()[i];
-			}
-		}
-	}
 
 	// m_v3Center will be based on the max and min vectors
-	for (uint i = 0; i < 3; i++)
-	{
-		m_v3Center[i] = (m_v3Max[i] + m_v3Min[i]) / 2.0f;
-	}
+	m_v3Center = (m_v3Max + m_v3Min) / 2.0f;
 
 	// The size will be calculated from the length of either the min or max vector
-	m_fSize = m_v3Max.x * 2.0f;
+	if (m_v3Max.x - m_v3Min.x > m_v3Max.y - m_v3Min.y)
+	{
+		if (m_v3Max.x - m_v3Min.x > m_v3Max.z - m_v3Min.z)
+		{
+			m_fSize = m_v3Max.x - m_v3Min.x;
+		}
+		else
+		{
+			m_fSize = m_v3Max.z - m_v3Min.z;
+		}
+	}
+	else
+	{
+		if (m_v3Max.y - m_v3Min.y > m_v3Max.z - m_v3Min.z)
+		{
+			m_fSize = m_v3Max.y - m_v3Min.y;
+		}
+		else
+		{
+			m_fSize = m_v3Max.z - m_v3Min.z;
+		}
+	}
+
+	m_lChild.push_back(this);
 }
 
-// Should only be called by a parent octant?
+// Should only be called by a parent octant
 MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 {
 	Init();
@@ -92,7 +104,7 @@ MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 	m_fSize = a_fSize;
 
 	// Calculate the max and min based on size
-	float myHalfWidth = sqrtf(powf(m_fSize, 2.0f) * 3.0f) / 2.0f;
+	float myHalfWidth = m_fSize / 2.0f;
 	for (uint i = 0; i < 3; i++)
 	{
 		m_v3Max[i] = m_v3Center[i] + myHalfWidth;
@@ -100,9 +112,6 @@ MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 	}
 
 	// Lastly, check the number of entities contained within this octant!
-
-	bool containsEntities = false;	// If this is ever set true, this octant needs to be added to the root's list
-
 	for (uint i = 0; i < m_pEntityMngr->GetEntityCount(); i++)
 	{
 		MyRigidBody* curRB = m_pEntityMngr->GetEntity(i)->GetRigidBody();
@@ -121,15 +130,8 @@ MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 			else if (j == 2)
 			{
 				m_EntityList.push_back(i);
-				containsEntities = true;
 			}
 		}
-	}
-
-	// The child has entities inside of it, so it needs to be pushed to the root node's list
-	if (containsEntities)
-	{
-		m_pRoot->m_lChild.push_back(this);
 	}
 }
 
@@ -269,9 +271,9 @@ void MyOctant::Subdivide()
 	for (uint i = 0; i < m_uChildren; i++)
 	{
 		// Algorithmically determine the centers of the 8 children; NOTE! Max and Min are GLOBAL, not local!
-		vector3 childCenter = vector3(m_v3Center.x - ((m_v3Max.x - m_v3Center.x) / 2.0f) + ((m_v3Max.x - m_v3Center.x) * (i % 2)),
-			m_v3Center.y - ((m_v3Max.y - m_v3Center.y) / 2.0f) + ((m_v3Max.y - m_v3Center.y) * ((i / 2) % 2)),
-			m_v3Center.z - ((m_v3Max.z - m_v3Center.z) / 2.0f) + ((m_v3Max.z - m_v3Center.z) * ((i / 4) % 2)));
+		vector3 childCenter = vector3((m_v3Center.x - ((m_v3Max.x - m_v3Center.x) / 2.0f)) + ((m_v3Max.x - m_v3Center.x) * (i % 2)),
+			(m_v3Center.y - ((m_v3Max.y - m_v3Center.y) / 2.0f)) + ((m_v3Max.y - m_v3Center.y) * ((i / 2) % 2)),
+			(m_v3Center.z - ((m_v3Max.z - m_v3Center.z) / 2.0f)) + ((m_v3Max.z - m_v3Center.z) * ((i / 4) % 2)));
 
 		m_pChild[i] = new MyOctant(childCenter, m_fSize / 2.0f);
 
@@ -324,7 +326,7 @@ void MyOctant::ConstructTree(uint a_nMaxLevel)
 {
 	// If this function has been called, that means that the octant it was called on was the root! Subdivide and conquer!
 	Subdivide();
-	for (uint i = 0; i < 8; i++)
+	for (uint i = 0; i < m_uChildren; i++)
 	{
 		// Only subdivide again if the child contains entities and its level is less than our maximum!
 		if (m_pChild[i]->ContainsMoreThan(0) && m_pChild[i]->m_uLevel < a_nMaxLevel)
@@ -333,11 +335,34 @@ void MyOctant::ConstructTree(uint a_nMaxLevel)
 		}
 	}
 
+	if (this == m_pRoot)
+	{
+		ConstructList();
+	}
 }
 
 void MyOctant::AssignIDtoEntity()
 {
-	// ???
+	// Puts every object in every octant inside of a dimension
+	for (uint i = 0; i < m_uChildren; i++)
+	{
+		m_pChild[i]->AssignIDtoEntity();
+	}
+
+	// No sense in registering entities if this octant has children
+	if (m_uChildren > 0)
+	{
+		return;
+	}
+
+	// But if it doesn't...
+	else
+	{
+		for (uint i = 0; i < m_EntityList.size(); i++)
+		{
+			m_pEntityMngr->AddDimension(m_EntityList[i], m_uID);
+		}
+	}
 }
 
 uint MyOctant::GetOctantCount()
@@ -386,5 +411,21 @@ void MyOctant::Init()
 
 void MyOctant::ConstructList()
 {
-	// ???
+	// Traverses the tree and puts every leaf that contains entities in a list
+	for (uint i = 0; i < m_uChildren; i++)
+	{
+		m_pChild[i]->ConstructList();
+	}
+
+	// No sense in registering entities if this octant has children
+	if (m_uChildren > 0)
+	{
+		return;
+	}
+
+	// But if it doesn't...
+	else if(m_EntityList.size() > 0)
+	{
+		m_pRoot->m_lChild.push_back(this);
+	}
 }

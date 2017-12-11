@@ -23,6 +23,8 @@ class Application
 	uint m_uOctantLevels = 0; //Number of levels in the octree
 	MyOctant* m_pOctree = nullptr;
 
+	bool m_bOptimize = true;
+
 private:
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //programmer
 
